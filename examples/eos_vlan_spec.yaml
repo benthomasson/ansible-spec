@@ -1,0 +1,123 @@
+---
+module_name: eos_vlan
+ansible_metadata:
+  status:
+    - preview
+  supported_by: core
+  version: "1.0"
+short_description: Manage the collection of local uesrs on Arista EOS devices
+description:
+  - This module provides declarative management of the local usernames
+    configured on Arista EOS devices.  It allows playbooks to manage
+    either individual usernames or the collection of usernames in the
+    current running config.  It also supports purging usernames from the
+    configuration that are not explicitly defined.
+supports_check_mode: True
+notes: null
+requirements: null
+options:
+  users:
+    description:
+      - The set of username objects to be configured on the remote
+        Arista EOS device.  The list entries can either be the username
+        or a hash of username and properties.  This argument is mutually
+        exclusive with the C(username) argument.
+    required: false
+    default: null
+    type: list
+  username:
+    description:
+      - The username to be configured on the remote Arista EOS
+        device.  This argument accepts a stringv value and is mutually
+        exclusive with the C(users) argument.
+    required: false
+    default: null
+    type: str
+  update_password:
+    description:
+      - Since passwords are encrypted in the device running config, this
+        argument will instruct the module when to change the password.  When
+        set to C(always), the password will always be updated in the device
+        and when set to C(on_create) the password will be updated only if
+        the username is created.
+    required: false
+    default: always
+    choices: ['on_create', 'always']
+    type: str
+  privilege:
+    description:
+      - The C(privilege) argument configures the privilege level of the
+        user when logged into the system.  This argument accepts integer
+        values in the range of 1 to 15.
+    required: false
+    default: null
+    type: int
+  role:
+    description:
+      - The C(role) argument configures the role for the username in the
+        device running configuration.  The argument accepts a string value
+        defining the role name.  This argument does not check if the role
+        has been configured on the device.
+  sshkey:
+    description:
+      - The C(sshkey) argument defines the SSH public key to configure
+        for the username.  This argument accepts a valid SSH key value.
+    required: false
+    default: null
+  nopassword:
+    description:
+      - The C(nopassword) argument defines the username without assigning
+        a password.  This will allow the user to login to the system
+        without being authenticated by a password.  This argument accepts
+        boolean values.
+    required: false
+    default: null
+    choices: ['true', 'false']
+    type: bool
+  purge:
+    description:
+      - The C(purge) argument instructs the module to consider the
+        resource definition absolute.  It will remove any previously
+        configured usernames on the device with the exception of the
+        `admin` user which cannot be deleted per EOS constraints.
+    required: false
+    default: false
+    type: bool
+  state:
+    description:
+      - The C(state) argument configures the state of the uername definition
+        as it relates to the device operational configuration.  When set
+        to I(present), the username(s) should be configured in the device active
+        configuration and when set to I(absent) the username(s) should not be
+        in the device active configuration
+    required: false
+    default: present
+    choices: ['present', 'absent']
+examples: |
+  - name: create a new user
+    eos_user:
+      username: ansible
+      sshkey: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+      state: present
+  - name: remove all users except admin
+    eos_user:
+      purge: yes
+  - name: set multiple users to privilege level
+    users:
+      - username: netop
+      - username: netend
+    privilege: 15
+    state: present
+return: |
+  commands:
+    description: The list of configuration mode commands to send to the device
+    returned: always
+    type: list
+    sample:
+      - username ansible secret password
+      - username admin secret admin
+  session_name:
+    description: The EOS config session name used to load the configuration
+    returned: when changed is True
+    type: str
+    sample: ansible_1479315771

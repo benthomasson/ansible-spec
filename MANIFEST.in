@@ -1,3 +1,5 @@
+recursive-include examples *
+include *.txt
 include *.md
 include LICENSE
 include AUTHORS

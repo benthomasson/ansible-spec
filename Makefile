@@ -15,3 +15,7 @@ clean:
 .PHONY: test
 test:
 	./test/run.sh
+
+.PHONY: authors
+authors:
+	$(PYTHON) update-authors.py > AUTHORS
